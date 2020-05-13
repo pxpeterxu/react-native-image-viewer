@@ -485,6 +485,7 @@ export default class ImageViewer extends React.Component<Props, State> {
           pinchToZoom={this.props.enableImageZoom}
           enableDoubleClickZoom={this.props.enableImageZoom}
           doubleClickInterval={this.props.doubleClickInterval}
+          useNativeDriver={this.props.useNativeDriver}
           {...others}
         >
           {children}
@@ -558,6 +559,7 @@ export default class ImageViewer extends React.Component<Props, State> {
               doubleClickInterval={this.props.doubleClickInterval}
               minScale={this.props.minScale}
               maxScale={this.props.maxScale}
+              useNativeDriver={this.props.useNativeDriver}
             >
               {this.props.renderImage(image.props as ImageProps)}
             </ImageZoom>
