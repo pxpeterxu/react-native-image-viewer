@@ -397,38 +397,6 @@ export interface Props {
   menus?: ({ cancel, saveToLocal }: { cancel: () => unknown; saveToLocal: () => unknown }) => React.ReactNode;
 }
 
-export class State {
-  /**
-   * 是否显示
-   */
-  public show: boolean = false;
-
-  /**
-   * 当前显示第几个
-   */
-  public currentShowIndex: number = 0;
-
-  /**
-   * Used to detect if parent component applied new index prop
-   */
-  public prevIndexProp: number = 0;
-
-  /**
-   * 图片拉取是否完毕了
-   */
-  public imageLoaded: boolean = false;
-
-  /**
-   * 图片长宽列表
-   */
-  public imageSizes: IImageSize[] = [];
-
-  /**
-   * 是否出现功能菜单
-   */
-  public isShowMenu: boolean = false;
-}
-
 export interface IImageInfo {
   url: string;
   /**
