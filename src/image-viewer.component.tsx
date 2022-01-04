@@ -14,10 +14,12 @@ import {
   StyleSheet,
   StyleProp,
   ImageStyle,
+  ImageProps,
 } from 'react-native';
 import ImageZoom from 'react-native-image-pan-zoom';
 import styles from './image-viewer.style';
-import { IImageInfo, IImageSize, Props, defaultProps } from './image-viewer.type';
+import { IImageInfo, IImageSize, Props } from './image-viewer.type';
+import { simpleStyle } from './image-viewer.style';
 
 interface State {
   /**
@@ -62,7 +64,64 @@ interface ContainerDimensions {
 }
 
 export default class ImageViewer extends React.Component<Props, State> {
-  static defaultProps = defaultProps;
+  static defaultProps = {
+    show: false,
+    imageUrls: [],
+    flipThreshold: 80,
+    maxOverflow: 300,
+    index: 0,
+    failImageSource: undefined,
+    backgroundColor: 'black',
+    footerContainerStyle: {},
+    menuContext: { saveToLocal: 'save to the album', cancel: 'cancel' },
+    saveToLocalByLongPress: true,
+    enableImageZoom: true,
+    style: {},
+    enableSwipeDown: false,
+    enablePreload: false,
+    pageAnimateTime: 100,
+    useNativeDriver: false,
+    /* eslint-disable @typescript-eslint/no-empty-function */
+    onLongPress: () => {},
+    onClick: () => {},
+    onDoubleClick: () => {},
+    onSave: () => {},
+    onMove: () => {},
+    renderHeader: () => {
+      return null;
+    },
+    renderFooter: () => {
+      return null;
+    },
+    // eslint-disable-next-line react/display-name
+    renderIndicator: (currentIndex?: number, allSize?: number) => {
+      return React.createElement(
+        View,
+        { style: simpleStyle.count },
+        React.createElement(Text, { style: simpleStyle.countText }, currentIndex + '/' + allSize)
+      );
+    },
+    // eslint-disable-next-line react/display-name
+    renderImage: (props: ImageProps) => {
+      return React.createElement(Image, props);
+    },
+    renderArrowLeft: () => {
+      return null;
+    },
+    renderArrowRight: () => {
+      return null;
+    },
+    onShowModal: () => {},
+    onCancel: () => {},
+    onSwipeDown: () => {},
+    loadingRender: () => {
+      return null;
+    },
+    onSaveToCamera: () => {},
+    onChange: () => {},
+    /* eslint-enable @typescript-eslint/no-empty-function */
+  };
+
   state: State = {
     show: false,
     currentShowIndex: 0,
