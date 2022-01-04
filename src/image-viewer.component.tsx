@@ -142,14 +142,10 @@ export default class ImageViewer extends React.Component<Props, State> {
   private positionXNumber = 0;
   private positionX = new Animated.Value(0);
 
-  private styles = styles(0, 0, 'transparent');
-
   // 记录已加载的图片 index
   private loadedIndex = new Map<number, boolean>();
 
   private handleLongPressWithIndex = new Map<number, () => void>();
-
-  private imageRefs: (ImageZoom | null)[] = [];
 
   componentDidMount() {
     this.init(this.props);
@@ -218,13 +214,7 @@ export default class ImageViewer extends React.Component<Props, State> {
       }
     );
   }
-  /**
-   * reset Image scale and position
-   */
-  resetImageByIndex = (index: number) => {
-    const imageRef = this.imageRefs[index];
-    if (imageRef) imageRef.reset();
-  };
+
   /**
    * 调到当前看图位置
    */
@@ -534,14 +524,17 @@ export default class ImageViewer extends React.Component<Props, State> {
 
     if (width !== prevWidth || height !== prevHeight) {
       const { width, height } = event.nativeEvent.layout;
-      this.styles = styles(width, height, this.props.backgroundColor || 'transparent');
-
       this.setState({ containerDimensions: { width, height } });
 
       // 强制刷新
-      this.forceUpdate();
       this.jumpToCurrentImage();
     }
+  };
+
+  styles = () => {
+    const { backgroundColor } = this.props;
+    const { width, height } = this.state.containerDimensions;
+    return styles(width, height, backgroundColor);
   };
 
   /**
@@ -550,6 +543,7 @@ export default class ImageViewer extends React.Component<Props, State> {
   getContent() {
     // 获得屏幕宽高
     const { width: screenWidth, height: screenHeight } = this.state.containerDimensions;
+    const styles = this.styles();
 
     const ImageElements = this.props.imageUrls.map((image, index) => {
       if ((this.state.currentShowIndex || 0) > index + 1 || (this.state.currentShowIndex || 0) < index - 1) {
@@ -613,11 +607,11 @@ export default class ImageViewer extends React.Component<Props, State> {
           return (
             <Wrapper
               key={index}
-              style={StyleSheet.flatten([this.styles.modalContainer, this.styles.loadingContainer])}
+              style={StyleSheet.flatten([styles.modalContainer, styles.loadingContainer])}
               imageWidth={screenWidth}
               imageHeight={screenHeight}
             >
-              <View style={this.styles.loadingContainer}>{this.props.loadingRender()}</View>
+              <View style={styles.loadingContainer}>{this.props.loadingRender()}</View>
             </Wrapper>
           );
         case 'success':
@@ -626,7 +620,7 @@ export default class ImageViewer extends React.Component<Props, State> {
           }
 
           const style: StyleProp<ImageStyle> = [
-            this.styles.imageStyle,
+            styles.imageStyle,
             image.props.style, // User config
             { width, height },
           ];
@@ -643,7 +637,6 @@ export default class ImageViewer extends React.Component<Props, State> {
           return (
             <ImageZoom
               key={index}
-              ref={(el: ImageZoom) => (this.imageRefs[index] = el)}
               cropWidth={screenWidth}
               cropHeight={screenHeight}
               maxOverflow={this.props.maxOverflow}
@@ -673,7 +666,7 @@ export default class ImageViewer extends React.Component<Props, State> {
           return (
             <Wrapper
               key={index}
-              style={StyleSheet.flatten(this.styles.modalContainer)}
+              style={StyleSheet.flatten(styles.modalContainer)}
               imageWidth={this.props.failImageSource ? this.props.failImageSource.width : screenWidth}
               imageHeight={this.props.failImageSource ? this.props.failImageSource.height : screenHeight}
             >
@@ -696,16 +689,16 @@ export default class ImageViewer extends React.Component<Props, State> {
 
     return (
       <Animated.View style={{ zIndex: 9 }}>
-        <Animated.View style={[this.styles.container, { opacity: this.fadeAnim }]}>
+        <Animated.View style={[styles.container, { opacity: this.fadeAnim }]}>
           {renderHeader ? renderHeader(this.state.currentShowIndex) : null}
 
-          <View style={this.styles.arrowLeftContainer}>
+          <View style={styles.arrowLeftContainer}>
             <TouchableWithoutFeedback onPress={this.goBack}>
               <View>{renderArrowLeft ? renderArrowLeft() : null}</View>
             </TouchableWithoutFeedback>
           </View>
 
-          <View style={this.styles.arrowRightContainer}>
+          <View style={styles.arrowRightContainer}>
             <TouchableWithoutFeedback onPress={this.goNext}>
               <View>{renderArrowRight ? renderArrowRight() : null}</View>
             </TouchableWithoutFeedback>
@@ -713,7 +706,7 @@ export default class ImageViewer extends React.Component<Props, State> {
 
           <Animated.View
             style={[
-              this.styles.moveBox,
+              styles.moveBox,
               {
                 transform: [{ translateX: this.positionX }],
                 width: screenWidth * this.props.imageUrls.length,
@@ -727,9 +720,9 @@ export default class ImageViewer extends React.Component<Props, State> {
           {this.props.imageUrls[this.state.currentShowIndex || 0] &&
             this.props.imageUrls[this.state.currentShowIndex || 0].originSizeKb &&
             this.props.imageUrls[this.state.currentShowIndex || 0].originUrl && (
-              <View style={this.styles.watchOrigin}>
-                <TouchableOpacity style={this.styles.watchOriginTouchable}>
-                  <Text style={this.styles.watchOriginText}>查看原图(2M)</Text>
+              <View style={styles.watchOrigin}>
+                <TouchableOpacity style={styles.watchOriginTouchable}>
+                  <Text style={styles.watchOriginText}>查看原图(2M)</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -760,27 +753,25 @@ export default class ImageViewer extends React.Component<Props, State> {
       return null;
     }
 
+    const styles = this.styles();
+
     if (this.props.menus) {
       return (
-        <View style={this.styles.menuContainer}>
+        <View style={styles.menuContainer}>
           {this.props.menus({ cancel: this.handleLeaveMenu, saveToLocal: this.saveToLocal })}
         </View>
       );
     }
 
     return (
-      <View style={this.styles.menuContainer}>
-        <View style={this.styles.menuShadow} />
-        <View style={this.styles.menuContent}>
-          <TouchableHighlight underlayColor="#F2F2F2" onPress={this.saveToLocal} style={this.styles.operateContainer}>
-            <Text style={this.styles.operateText}>{this.props.menuContext.saveToLocal}</Text>
+      <View style={styles.menuContainer}>
+        <View style={styles.menuShadow} />
+        <View style={styles.menuContent}>
+          <TouchableHighlight underlayColor="#F2F2F2" onPress={this.saveToLocal} style={styles.operateContainer}>
+            <Text style={styles.operateText}>{this.props.menuContext.saveToLocal}</Text>
           </TouchableHighlight>
-          <TouchableHighlight
-            underlayColor="#F2F2F2"
-            onPress={this.handleLeaveMenu}
-            style={this.styles.operateContainer}
-          >
-            <Text style={this.styles.operateText}>{this.props.menuContext.cancel}</Text>
+          <TouchableHighlight underlayColor="#F2F2F2" onPress={this.handleLeaveMenu} style={styles.operateContainer}>
+            <Text style={styles.operateText}>{this.props.menuContext.cancel}</Text>
           </TouchableHighlight>
         </View>
       </View>
